@@ -97,6 +97,17 @@
       color: #64748b;
       cursor: not-allowed;
     }
+    .reset-btn {
+      margin-top: 8px;
+      background: transparent;
+      color: #64748b;
+      font-size: 12px;
+      padding: 6px;
+    }
+    .reset-btn:hover:not(:disabled) {
+      background: transparent;
+      color: #ef4444;
+    }
     .floating-text {
       position: absolute;
       font-weight: 800;
@@ -119,9 +130,9 @@
     <div class="rank-display" id="rank">Ранг: Jabroni</div>
 
     <div class="clicker-area" id="clicker-area">
-      <!-- Укажите свою локальную картинку в src, например: src="billy.jpg" -->
+      <!-- Файл billy.gif должен лежать в той же папке, что и этот HTML-файл -->
       <img
-        src="Bully.png"
+        src="billy.gif"
         alt="Billy Herrington"
         class="billy-img"
         id="billy-btn"
@@ -136,25 +147,57 @@
       <button id="upgrade-auto" onclick="buyAutoUpgrade()">
         Нанять Dungeon Master (+1 в сек) — 50 ♂️
       </button>
+      <button class="reset-btn" onclick="resetProgress()">
+        Сбросить прогресс
+      </button>
     </div>
   </div>
 
   <script>
-    let score = 0;
-    let clickPower = 1;
-    let autoPower = 0;
-    let clickCost = 15;
-    let autoCost = 50;
+    // Загружаем сохранённый прогресс из localStorage (или ставим значения по умолчанию)
+    let score = Number(localStorage.getItem('gachi_score')) || 0;
+    let clickPower = Number(localStorage.getItem('gachi_clickPower')) || 1;
+    let autoPower = Number(localStorage.getItem('gachi_autoPower')) || 0;
+    let clickCost = Number(localStorage.getItem('gachi_clickCost')) || 15;
+    let autoCost = Number(localStorage.getItem('gachi_autoCost')) || 50;
 
     const phrases = ['+1 ♂️', 'ASS WE CAN!', '♂️ SLAP! ♂️', 'YES SIR!', 'WOO!', '300 BUCKS!'];
 
     const billyBtn = document.getElementById('billy-btn');
     const clickerArea = document.getElementById('clicker-area');
 
+    // Функция сохранения всех данных в память браузера
+    function saveGame() {
+      localStorage.setItem('gachi_score', score);
+      localStorage.setItem('gachi_clickPower', clickPower);
+      localStorage.setItem('gachi_autoPower', autoPower);
+      localStorage.setItem('gachi_clickCost', clickCost);
+      localStorage.setItem('gachi_autoCost', autoCost);
+    }
+
+    // Функция сброса прогресса
+    function resetProgress() {
+      if (confirm('Точно сбросить весь прогресс?')) {
+        localStorage.removeItem('gachi_score');
+        localStorage.removeItem('gachi_clickPower');
+        localStorage.removeItem('gachi_autoPower');
+        localStorage.removeItem('gachi_clickCost');
+        localStorage.removeItem('gachi_autoCost');
+
+        score = 0;
+        clickPower = 1;
+        autoPower = 0;
+        clickCost = 15;
+        autoCost = 50;
+        updateUI();
+      }
+    }
+
     billyBtn.addEventListener('click', function (e) {
       score += clickPower;
       spawnFloatingText(e);
       updateUI();
+      saveGame();
     });
 
     function spawnFloatingText(e) {
@@ -180,6 +223,7 @@
         clickPower += 1;
         clickCost = Math.floor(clickCost * 1.6);
         updateUI();
+        saveGame();
       }
     }
 
@@ -189,6 +233,7 @@
         autoPower += 1;
         autoCost = Math.floor(autoCost * 1.7);
         updateUI();
+        saveGame();
       }
     }
 
@@ -217,6 +262,7 @@
       if (autoPower > 0) {
         score += autoPower;
         updateUI();
+        saveGame();
       }
     }, 1000);
 
